@@ -3,140 +3,191 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f1e3">
+<meta name="theme-color" content="#f8f4e7">
+<meta name="description" content="A working implementation of Mark Forster's Autofocus time management system.">
+<meta property="og:title" content="Autofocus">
+<meta property="og:description" content="Mark Forster's Autofocus time management system — a working implementation.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Autofocus">
 <title>Autofocus — Mark Forster's system, working</title>
 <style>
 :root{
-  --paper:#f8f4e7; --paper2:#f3eedd; --ink:#2b2b26; --ink-soft:#5c5a50;
-  --rule:#d8d2bd; --margin:#d98a8a; --accent:#2f5d3a; --accent-ink:#fff;
-  --hl:#fff3a3; --danger:#a33b3b; --tab:#efe9d6;
+  --paper:#f8f4e7; --ink:#2b2b26; --ink-soft:#6a675c;
+  --rule:#d8d2bd; --margin:#d98a8a; --accent:#2f5d3a;
+  --hl:#fff3a3; --danger:#a33b3b; --tab:#efe9d6; --fs:1;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
 body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background:#e9e2cd; color:var(--ink); line-height:1.45;
+  background:#e7dfc8; color:var(--ink); line-height:1.45;
   max-width:680px; margin:0 auto; min-height:100vh; min-height:100dvh;
-  display:flex; flex-direction:column; padding-bottom:76px;
+  display:flex; flex-direction:column; padding-bottom:calc(76px + env(safe-area-inset-bottom));
 }
-header{position:sticky;top:0;z-index:20;background:#efe9d6;border-bottom:1px solid var(--rule)}
-#nbTabs{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;align-items:center}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+header{position:sticky;top:0;z-index:20;background:var(--tab);border-bottom:1px solid var(--rule)}
+#nbTabs{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;align-items:center;scrollbar-width:none}
+#nbTabs::-webkit-scrollbar{display:none}
 .nbtab{border:1px solid var(--rule);background:var(--paper);border-radius:999px;
-  padding:7px 14px;font-size:15px;white-space:nowrap;cursor:pointer;color:var(--ink)}
+  padding:8px 16px;font-size:calc(15px * var(--fs));white-space:nowrap;cursor:pointer;color:var(--ink)}
 .nbtab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .nbadd{border:1px dashed var(--rule);background:transparent;border-radius:999px;
-  padding:7px 12px;font-size:15px;color:var(--ink-soft);cursor:pointer;white-space:nowrap}
-main{padding:12px 12px 24px;flex:1}
+  padding:8px 14px;font-size:calc(15px * var(--fs));color:var(--ink-soft);cursor:pointer;white-space:nowrap}
+main{padding:12px 12px 24px;flex:1;animation:fade .18s ease}
+button{font-family:inherit}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .page{
   background:
     linear-gradient(90deg, transparent 44px, var(--margin) 44px, var(--margin) 46px, transparent 46px),
     repeating-linear-gradient(var(--paper) 0 30px, var(--rule) 30px 31px);
   background-color:var(--paper);
-  border:1px solid var(--rule); border-radius:6px; box-shadow:0 2px 6px rgba(60,50,20,.12);
+  border:1px solid var(--rule); border-radius:8px; box-shadow:0 2px 8px rgba(60,50,20,.10);
   margin:0 0 16px; padding:10px 10px 14px 56px;
 }
-.pagehead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
-.pagehead h3{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
-.badge{font-size:12px;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:2px 9px;background:#fff8}
-.badge.closed{background:#e4ddc4}
-.task{display:flex;gap:10px;align-items:flex-start;padding:7px 2px;min-height:31px;border-bottom:1px dotted #0000}
-.task .box{flex:0 0 auto;width:20px;height:20px;border:2px solid var(--ink-soft);border-radius:4px;margin-top:2px;background:#fff;cursor:pointer}
+.pagehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.pagehead h3{margin:0;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.badge{font-size:12px;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:3px 10px;background:#ffffff88;white-space:nowrap}
+.badge.live{background:#e9f0e2;border-color:#b9cba4;color:var(--accent);font-weight:700}
+.task{display:flex;gap:10px;align-items:flex-start;padding:8px 2px;min-height:32px;border-radius:6px}
+.task .box{flex:0 0 auto;width:22px;height:22px;border:2px solid var(--ink-soft);border-radius:6px;margin-top:1px;background:#fff;cursor:pointer;padding:0}
 .task.done .box{background:var(--ink-soft);border-color:var(--ink-soft)}
-.task .txt{flex:1;font-size:16px;overflow-wrap:anywhere}
-.task.done .txt{color:var(--ink-soft);text-decoration:line-through}
+.task.dismissed .box{cursor:default;opacity:.45}
+.task .txt{flex:1;font-size:calc(16px * var(--fs));overflow-wrap:anywhere;cursor:pointer;padding:1px 0}
+.task.done .txt{color:var(--ink-soft);text-decoration:line-through;cursor:pointer}
 .task.dismissed .txt{background:var(--hl);text-decoration:line-through;color:var(--ink-soft)}
-.task .meta{font-size:12px;color:var(--ink-soft)}
-.datemark{font-size:12px;font-weight:700;color:var(--accent);margin-right:6px}
-.acts{display:flex;gap:2px}
-.acts button{border:0;background:none;font-size:16px;padding:6px;cursor:pointer;color:var(--ink-soft);line-height:1}
-.addrow{display:flex;gap:8px;margin-top:8px}
-.addrow input{flex:1;font-size:16px;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;background:#fff}
-.btn{display:inline-block;border:0;border-radius:10px;background:var(--ink);color:#fff;
-  font-size:16px;padding:11px 18px;cursor:pointer}
+.task .meta{font-size:calc(12px * var(--fs));color:var(--ink-soft);margin-top:2px}
+.datemark{font-size:calc(12px * var(--fs));font-weight:700;color:var(--accent);margin-right:6px}
+.detail{background:#fffdf4;border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:2px 0 8px;font-size:calc(14px * var(--fs))}
+.detail .drow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chipbtn{border:1px solid var(--rule);background:#fff;border-radius:999px;padding:8px 13px;font-size:calc(14px * var(--fs));cursor:pointer;color:var(--ink)}
+.chipbtn.danger{color:var(--danger);border-color:#d9a3a3}
+.addwrap{position:relative;margin-top:10px}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;font-size:calc(16px * var(--fs));padding:11px 13px;border:1px solid var(--rule);border-radius:10px;background:#fff;min-width:0}
+.suggest{position:absolute;left:0;right:0;top:100%;z-index:30;background:#fffdf4;border:1px solid var(--rule);
+  border-radius:10px;margin-top:4px;box-shadow:0 8px 24px rgba(60,50,20,.18);overflow:hidden}
+.suggest button{display:flex;width:100%;text-align:left;border:0;background:none;padding:11px 13px;font-size:calc(15px * var(--fs));cursor:pointer;border-bottom:1px solid #eee7d2;color:var(--ink)}
+.suggest button:last-child{border-bottom:0}
+.suggest .tag{font-size:11px;color:var(--ink-soft);margin-left:auto;flex:0 0 auto;padding-left:8px}
+.btn{display:inline-block;border:0;border-radius:12px;background:var(--ink);color:#fff;
+  font-size:calc(16px * var(--fs));padding:12px 20px;cursor:pointer}
 .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--rule)}
 .btn.green{background:var(--accent)}
 .btn.danger{background:var(--danger)}
 .btn.block{width:100%;margin-top:10px}
 .btnrow{display:flex;gap:10px;margin-top:12px}
 .btnrow .btn{flex:1}
-.warn{background:#fff8d6;border:1px solid #e3cf6a;border-radius:8px;padding:10px 12px;font-size:14px;margin:8px 0}
-.notice{background:#eef3e7;border:1px solid #b9cba4;border-radius:8px;padding:10px 12px;font-size:14px;margin:8px 0}
-.card{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:14px;margin-bottom:12px}
-.card h2{margin:0 0 8px;font-size:19px}
-.card h3{margin:14px 0 6px;font-size:16px}
-.muted{color:var(--ink-soft);font-size:14px}
-.big-task{font-size:22px;font-weight:600;margin:6px 0 12px;overflow-wrap:anywhere}
-.timer{font-size:15px;color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-bottom:12px}
-textarea.note{width:100%;min-height:70px;font-size:15px;padding:10px;border:1px solid var(--rule);border-radius:8px;background:#fff;font-family:inherit}
-input.text{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;background:#fff;margin-top:6px}
-label.f{display:block;font-size:14px;color:var(--ink-soft);margin:10px 0 2px}
-.progress{font-size:13px;color:var(--ink-soft);margin-bottom:8px}
+.warn{background:#fff8d6;border:1px solid #e3cf6a;border-radius:10px;padding:11px 13px;font-size:calc(14px * var(--fs));margin:8px 0}
+.notice{background:#eef3e7;border:1px solid #b9cba4;border-radius:10px;padding:11px 13px;font-size:calc(14px * var(--fs));margin:8px 0}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(60,50,20,.08)}
+.card h2{margin:0 0 8px;font-size:calc(20px * var(--fs))}
+.card h3{margin:16px 0 6px;font-size:calc(16px * var(--fs))}
+.muted{color:var(--ink-soft);font-size:calc(14px * var(--fs))}
+.big-task{font-size:calc(23px * var(--fs));font-weight:650;margin:8px 0 12px;overflow-wrap:anywhere;letter-spacing:-.01em}
+.timer{font-size:calc(15px * var(--fs));color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-bottom:12px}
+textarea.note{width:100%;min-height:72px;font-size:calc(15px * var(--fs));padding:10px 12px;border:1px solid var(--rule);border-radius:10px;background:#fff;font-family:inherit}
+input.text{width:100%;font-size:calc(16px * var(--fs));padding:11px 13px;border:1px solid var(--rule);border-radius:10px;background:#fff;margin-top:6px}
+label.f{display:block;font-size:calc(14px * var(--fs));color:var(--ink-soft);margin:12px 0 2px;font-weight:600}
+.progress{font-size:calc(13px * var(--fs));color:var(--ink-soft);margin-bottom:10px;letter-spacing:.02em}
 nav#tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:680px;
   display:flex;background:var(--tab);border-top:1px solid var(--rule);z-index:20;padding-bottom:env(safe-area-inset-bottom)}
-nav#tabs button{flex:1;border:0;background:none;padding:12px 4px;font-size:13px;color:var(--ink-soft);cursor:pointer}
+nav#tabs button{flex:1;border:0;background:none;padding:13px 4px;font-size:calc(13px * var(--fs));color:var(--ink-soft);cursor:pointer}
 nav#tabs button.on{color:var(--ink);font-weight:700}
-#modal{position:fixed;inset:0;background:rgba(30,25,10,.5);display:none;z-index:50;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto}
+#modal{position:fixed;inset:0;background:rgba(30,25,10,.5);display:none;z-index:50;align-items:flex-end;justify-content:center;overflow-y:auto}
 #modal.open{display:flex}
-.sheet{background:var(--paper);border-radius:12px;max-width:600px;width:100%;padding:18px;max-height:85vh;overflow-y:auto}
-.sheet h2{margin-top:0}
-.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dotted var(--rule);font-size:15px}
-.logday{font-weight:700;margin:14px 0 4px;font-size:15px}
-.logitem{padding:4px 0 4px 18px;font-size:15px;position:relative}
-.logitem:before{content:"✓";position:absolute;left:0;color:var(--accent)}
+@media(min-width:560px){#modal{align-items:center;padding:24px}}
+.sheet{background:var(--paper);border-radius:16px 16px 0 0;width:100%;max-width:600px;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto;animation:fade .18s ease}
+@media(min-width:560px){.sheet{border-radius:16px}}
+.sheet h2{margin:0 0 6px;font-size:calc(19px * var(--fs))}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dotted var(--rule);font-size:calc(15px * var(--fs))}
+.logday{font-weight:700;margin:16px 0 4px;font-size:calc(15px * var(--fs))}
+.logitem{padding:5px 0 5px 20px;font-size:calc(15px * var(--fs));position:relative}
+.logitem:before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700}
+.logitem .t{color:var(--ink-soft);font-size:calc(12px * var(--fs))}
+ol.steps{padding-left:22px;font-size:calc(15px * var(--fs))}
+ol.steps li{margin-bottom:9px}
+ul.donts{padding-left:22px;font-size:calc(15px * var(--fs))}
+ul.donts li{margin-bottom:7px}
+.center{text-align:center;padding:44px 22px}
+.focusbox{background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:22px 18px;box-shadow:0 2px 8px rgba(60,50,20,.10)}
+.checkline{display:flex;gap:10px;align-items:center;margin:14px 0;font-size:calc(15px * var(--fs))}
+.checkline input{width:22px;height:22px;accent-color:var(--accent)}
 details.closedpage{margin-bottom:12px}
-details.closedpage summary{cursor:pointer;font-size:14px;color:var(--ink-soft);padding:6px 2px}
-ol.steps{padding-left:20px;font-size:15px}
-ol.steps li{margin-bottom:8px}
-ul.donts{padding-left:20px;font-size:15px}
-ul.donts li{margin-bottom:6px}
-.center{text-align:center;padding:40px 20px}
-.focusbox{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:20px;box-shadow:0 2px 6px rgba(60,50,20,.12)}
-.checkline{display:flex;gap:10px;align-items:center;margin:12px 0;font-size:15px}
-.checkline input{width:20px;height:20px}
+details.closedpage summary{cursor:pointer;font-size:calc(14px * var(--fs));color:var(--ink-soft);padding:8px 2px;list-style:none}
+details.closedpage summary:before{content:"▸ ";font-size:12px}
+details.closedpage[open] summary:before{content:"▾ "}
+details.rentry{margin-top:12px}
+details.rentry summary{cursor:pointer;font-size:calc(14px * var(--fs));color:var(--ink-soft)}
+.stepper{display:flex;align-items:center;gap:12px;margin-top:6px}
+.stepper button{width:44px;height:44px;border-radius:12px;border:1px solid var(--rule);background:#fff;font-size:20px;cursor:pointer}
+.stepper .val{font-size:calc(16px * var(--fs));min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.hintcard{background:#eef3e7;border:1px solid #b9cba4;border-radius:12px;padding:13px 15px;margin-bottom:14px;font-size:calc(14px * var(--fs));display:flex;gap:10px;align-items:flex-start}
+.hintcard button{margin-left:auto;flex:0 0 auto;border:0;background:none;font-size:16px;cursor:pointer;color:var(--ink-soft)}
+.ver{text-align:center;color:var(--ink-soft);font-size:12px;margin:18px 0 4px}
+a{color:var(--accent)}
 </style>
 </head>
 <body>
-<header><div id="nbTabs"></div></header>
+<header><div id="nbTabs" role="tablist" aria-label="Notebooks"></div></header>
 <main id="view"></main>
-<nav id="tabs">
-  <button data-v="list">📓 List</button>
-  <button data-v="focus">🎯 Focus</button>
-  <button data-v="log">✓ Log</button>
-  <button data-v="more">⋯ More</button>
+<nav id="tabs" aria-label="Sections">
+  <button data-v="list" aria-label="List">📓<br>List</button>
+  <button data-v="focus" aria-label="Focus pass">🎯<br>Focus</button>
+  <button data-v="log" aria-label="Completion log">✓<br>Log</button>
+  <button data-v="more" aria-label="More">⋯<br>More</button>
 </nav>
-<div id="modal"><div class="sheet" id="sheet"></div></div>
+<div id="modal" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
 <script>
 "use strict";
-/* ============ storage ============ */
-const LS_KEY = "autofocus-v1";
+/* ================= storage ================= */
+const LS_KEY = "autofocus-v2";
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function seedState(){
   const mk = name => ({ id: uid(), name, tasks: [] });
   return { notebooks: [mk("Home"), mk("Workplace")], activeNbId: null,
-           settings: { pageSize: 25 }, lastVisit: Date.now() };
+           settings: { pageSize: 25, fontScale: 1, seenHint: false }, lastVisit: Date.now() };
 }
 let S;
 try { S = JSON.parse(localStorage.getItem(LS_KEY)) || seedState(); }
 catch(e){ S = seedState(); }
 if(!S.notebooks || !S.notebooks.length) S = seedState();
+S.settings = Object.assign({ pageSize: 25, fontScale: 1, seenHint: false }, S.settings || {});
 if(!S.activeNbId || !S.notebooks.some(n => n.id === S.activeNbId)) S.activeNbId = S.notebooks[0].id;
 const save = () => { try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} };
 save();
+function applyFontScale(){ document.documentElement.style.setProperty("--fs", S.settings.fontScale || 1); }
+applyFontScale();
 
-/* ============ model ============ */
+/* ================= model ================= */
 const nb = () => S.notebooks.find(n => n.id === S.activeNbId) || S.notebooks[0];
 const pageSize = () => Math.min(40, Math.max(10, S.settings.pageSize || 25));
 const lastPage = n => n.tasks.reduce((m,t) => Math.max(m, t.page), 0);
+const isDismissedPage = (n,p) => !!(n.dismissedPages && n.dismissedPages.includes(p));
 function openTasks(n, p){ return n.tasks.filter(t => t.page === p && t.status === "open"); }
+/* The writing page: where new items go. If the last page with tasks is
+   dismissed or has nothing open, a fresh page starts — like turning to a
+   clean sheet in the notebook. */
+function writingPage(n){
+  if(!n.tasks.length) return 0;
+  const p = lastPage(n);
+  const open = n.tasks.some(t => t.page === p && t.status === "open");
+  return (isDismissedPage(n,p) || !open) ? p + 1 : p;
+}
 function pageInfo(n, p){
   const ts = n.tasks.filter(t => t.page === p);
   const open = ts.filter(t => t.status === "open").length;
-  const dismissed = n.dismissedPages && n.dismissedPages.includes(p);
-  const isLast = p === lastPage(n);
-  const active = isLast || (open > 0 && !dismissed);
-  return { n:p, tasks:ts, open, isLast, dismissed:!!dismissed, active,
-           closed: !active && ts.length > 0 };
+  const dismissed = isDismissedPage(n, p);
+  const writing = p === writingPage(n);
+  const active = writing || (open > 0 && !dismissed);
+  return { n:p, tasks:ts, open, writing, dismissed, active, closed: !active && ts.length > 0 };
 }
 function allPages(n){
   const out = [];
@@ -144,14 +195,14 @@ function allPages(n){
   return out;
 }
 function firstActivePage(n){
-  const ps = allPages(n).filter(p => p.active);
-  return ps.length ? ps[0].n : -1;
+  const p = allPages(n).find(p => p.active);
+  return p ? p.n : -1;
 }
 function addTask(n, text, opts){
   opts = opts || {};
   text = String(text).trim();
   if(!text) return null;
-  let p = lastPage(n);
+  let p = writingPage(n);
   if(n.tasks.filter(t => t.page === p).length >= pageSize()) p++;
   const day = new Date().toDateString();
   const hasMark = n.tasks.some(t => new Date(t.createdAt).toDateString() === day && t.dateMark);
@@ -165,374 +216,584 @@ function findTask(id){
   return null;
 }
 const dayLabel = ts => new Date(ts).toLocaleDateString(undefined, {month:"short", day:"numeric", year:"numeric"});
+const timeLabel = ts => new Date(ts).toLocaleTimeString(undefined, {hour:"numeric", minute:"2-digit"});
 const weekdayLabel = ts => new Date(ts).toLocaleDateString(undefined, {weekday:"long", month:"long", day:"numeric"});
 function fmtDur(ms){
   const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor(s%3600/60), ss = s%60;
-  const p = x => String(x).padStart(2,"0");
-  return h > 0 ? h+":"+p(m)+":"+p(ss) : m+":"+p(ss);
+  const q = x => String(x).padStart(2,"0");
+  return h > 0 ? h+":"+q(m)+":"+q(ss) : m+":"+q(ss);
 }
 function dismissedMatch(n, text){
   const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g,"").trim();
   const q = norm(text); if(q.length < 4) return null;
   return n.tasks.find(t => t.status === "dismissed" && (norm(t.text).includes(q) || q.includes(norm(t.text)))) || null;
 }
+/* History suggestions: done + dismissed items matching what you type, most recent first. */
+function historySuggestions(n, q){
+  q = q.trim().toLowerCase(); if(q.length < 2) return [];
+  const seen = new Set(), out = [];
+  for(let i = n.tasks.length - 1; i >= 0 && out.length < 5; i--){
+    const t = n.tasks[i];
+    if(t.status !== "done" && t.status !== "dismissed") continue;
+    if(!t.text.toLowerCase().includes(q)) continue;
+    const k = t.text.toLowerCase();
+    if(seen.has(k)) continue; seen.add(k);
+    out.push(t);
+  }
+  return out;
+}
 
-/* ============ chrome ============ */
+/* ================= chrome ================= */
 const view = document.getElementById("view");
 let curView = "list";
+const expanded = new Set();
 function renderTabs(){
   const el = document.getElementById("nbTabs");
   el.innerHTML = S.notebooks.map(n =>
-    `<button class="nbtab${n.id===S.activeNbId?" on":""}" data-nb="${n.id}">${esc(n.name)}</button>`).join("") +
-    `<button class="nbadd" id="nbAdd">+ Notebook</button>`;
-  el.querySelectorAll("[data-nb]").forEach(b => b.onclick = () => { S.activeNbId = b.dataset.nb; F = null; save(); renderTabs(); go(curView); });
-  document.getElementById("nbAdd").onclick = () => {
-    const name = prompt("Notebook name:"); if(!name || !name.trim()) return;
+    `<button class="nbtab${n.id===S.activeNbId?" on":""}" role="tab" aria-selected="${n.id===S.activeNbId}" data-nb="${n.id}">${esc(n.name)}</button>`).join("") +
+    `<button class="nbadd" id="nbAdd" aria-label="Add notebook">+ Notebook</button>`;
+  el.querySelectorAll("[data-nb]").forEach(b => b.onclick = () => {
+    S.activeNbId = b.dataset.nb; F = null; expanded.clear(); save(); renderTabs(); go(curView);
+  });
+  document.getElementById("nbAdd").onclick = async () => {
+    const name = await uiPrompt("New notebook", "Name this notebook (e.g. Home, Work, a project):", "");
+    if(!name || !name.trim()) return;
     const n = { id: uid(), name: name.trim(), tasks: [] };
-    S.notebooks.push(n); S.activeNbId = n.id; F = null; save(); renderTabs(); go("list");
+    S.notebooks.push(n); S.activeNbId = n.id; F = null; expanded.clear();
+    save(); renderTabs(); go("list");
   };
 }
 document.querySelectorAll("nav#tabs button").forEach(b => b.onclick = () => go(b.dataset.v));
 function go(v){
   curView = v;
   document.querySelectorAll("nav#tabs button").forEach(b => b.classList.toggle("on", b.dataset.v === v));
-  stopTimer();
+  stopTimer(); expanded.clear();
   ({list:renderList, focus:renderFocus, log:renderLog, more:renderMore}[v])();
 }
-function modal(html){
-  const m = document.getElementById("modal"), sh = document.getElementById("sheet");
-  sh.innerHTML = html + `<div class="btnrow"><button class="btn block" id="mClose">Close</button></div>`;
-  m.classList.add("open");
-  document.getElementById("mClose").onclick = () => m.classList.remove("open");
-  m.onclick = e => { if(e.target === m) m.classList.remove("open"); };
+/* ---- custom sheets (no native prompt/confirm) ---- */
+const modalEl = document.getElementById("modal"), sheetEl = document.getElementById("sheet");
+function openSheet(html){
+  sheetEl.innerHTML = html;
+  modalEl.classList.add("open");
+  modalEl.onclick = e => { if(e.target === modalEl) closeSheet(null); };
+  const f = sheetEl.querySelector("input");
+  if(f) setTimeout(() => f.focus(), 60);
 }
-
-/* ============ list view ============ */
+let sheetResolve = null;
+function closeSheet(val){
+  modalEl.classList.remove("open");
+  if(sheetResolve){ const r = sheetResolve; sheetResolve = null; r(val); }
+}
+function uiConfirm(title, msg, okLabel){
+  return new Promise(resolve => {
+    sheetResolve = resolve;
+    openSheet(`<h2>${esc(title)}</h2><p class="muted" style="font-size:calc(15px * var(--fs))">${msg}</p>
+      <div class="btnrow"><button class="btn danger" id="sOk">${esc(okLabel || "Confirm")}</button>
+      <button class="btn ghost" id="sNo">Cancel</button></div>`);
+    document.getElementById("sOk").onclick = () => closeSheet(true);
+    document.getElementById("sNo").onclick = () => closeSheet(false);
+  });
+}
+function uiPrompt(title, msg, initial, okLabel){
+  return new Promise(resolve => {
+    sheetResolve = resolve;
+    openSheet(`<h2>${esc(title)}</h2>${msg ? `<p class="muted" style="font-size:calc(15px * var(--fs))">${msg}</p>` : ""}
+      <input class="text" id="sIn" value="${esc(initial || "")}" autocomplete="off">
+      <div class="btnrow"><button class="btn green" id="sOk">${esc(okLabel || "Save")}</button>
+      <button class="btn ghost" id="sNo">Cancel</button></div>`);
+    const inp = document.getElementById("sIn");
+    inp.onkeydown = e => { if(e.key === "Enter") closeSheet(inp.value); if(e.key === "Escape") closeSheet(null); };
+    document.getElementById("sOk").onclick = () => closeSheet(inp.value);
+    document.getElementById("sNo").onclick = () => closeSheet(null);
+  });
+}
+function uiAlert(title, msg){
+  return new Promise(resolve => {
+    sheetResolve = resolve;
+    openSheet(`<h2>${esc(title)}</h2><div style="font-size:calc(15px * var(--fs))">${msg}</div>
+      <button class="btn block" id="sOk">Close</button>`);
+    document.getElementById("sOk").onclick = () => closeSheet(true);
+  });
+}
+/* ================= list view ================= */
 function taskRow(n, t){
-  const acts = t.status === "open"
-    ? `<span class="acts">
-        <button data-act="done" data-id="${t.id}" title="Done">✓</button>
-        <button data-act="reenter" data-id="${t.id}" title="Re-enter at end">↩</button>
-        <button data-act="dismiss" data-id="${t.id}" title="Dismiss">⊘</button>
-        <button data-act="edit" data-id="${t.id}" title="Edit">✎</button>
-        <button data-act="del" data-id="${t.id}" title="Delete">🗑</button>
-       </span>` : "";
+  const boxAct = t.status === "dismissed" ? "" : `data-act="toggle" data-id="${t.id}"`;
   const dm = t.dateMark ? `<span class="datemark">${esc(dayLabel(t.createdAt))}</span>` : "";
   const note = t.note ? `<div class="meta">${esc(t.note)}</div>` : "";
+  const isOpen = expanded.has(t.id);
+  let det = "";
+  if(isOpen){
+    const sess = t.sessions ? `<div class="meta">${t.sessions} session${t.sessions>1?"s":""}${t.workMs ? " · " + fmtDur(t.workMs) + " total" : ""}</div>` : "";
+    let btns = "";
+    if(t.status === "open"){
+      btns = `<div class="drow">
+        <button class="chipbtn" data-act="reenter" data-id="${t.id}">↩ Re-enter at end</button>
+        <button class="chipbtn" data-act="dismiss" data-id="${t.id}">⊘ Dismiss</button>
+        <button class="chipbtn" data-act="edit" data-id="${t.id}">✎ Edit</button>
+        <button class="chipbtn danger" data-act="del" data-id="${t.id}">Delete</button></div>`;
+    } else if(t.status === "done"){
+      btns = `<div class="drow">
+        <button class="chipbtn" data-act="reenter" data-id="${t.id}">↩ Re-enter at end</button>
+        <button class="chipbtn danger" data-act="del" data-id="${t.id}">Delete</button></div>`;
+    } else {
+      btns = `<div class="drow">
+        <button class="chipbtn" data-act="readd" data-id="${t.id}">＋ Add again</button>
+        <button class="chipbtn danger" data-act="del" data-id="${t.id}">Delete</button></div>
+        <div class="meta" style="margin-top:6px">Dismissed ${esc(dayLabel(t.doneAt || t.createdAt))} — the system set this aside. Re-add only after reflection.</div>`;
+    }
+    det = `<div class="detail">${note}${sess}${btns}</div>`;
+  }
   return `<div class="task ${t.status}">
-    <span class="box" data-act="done" data-id="${t.id}"></span>
-    <span class="txt">${dm}${esc(t.text)}${note}</span>${acts}</div>`;
+    <button class="box" ${boxAct} aria-label="${t.status === "done" ? "Reopen task" : "Mark done"}"></button>
+    <span class="txt" data-expand="${t.id}">${dm}${esc(t.text)}${isOpen ? "" : note}</span></div>${det}`;
+}
+function pageCard(n, p, withAdd){
+  const badge = p.dismissed ? `<span class="badge">dismissed</span>`
+    : p.writing ? `<span class="badge live">writing page</span>`
+    : p.closed ? `<span class="badge">closed</span>`
+    : `<span class="badge">${p.open} open</span>`;
+  const head = `<div class="pagehead"><h3>Page ${p.n + 1}</h3>${badge}</div>`;
+  const rows = p.tasks.map(t => taskRow(n, t)).join("");
+  const add = withAdd ? `<div class="addwrap"><div class="addrow">
+      <input id="addInput" placeholder="Add to the end of the list…" autocomplete="off" aria-label="Add task">
+      <button class="btn" id="addBtn">Add</button></div>
+      <div class="suggest" id="suggest" style="display:none"></div><div id="addWarn"></div></div>` : "";
+  return `<div class="page">${head}${rows}${add}</div>`;
 }
 function renderList(){
   const n = nb();
-  const pages = allPages(n);
+  const wp = writingPage(n);
   let html = "";
+  if(!S.settings.seenHint){
+    html += `<div class="hintcard" id="hint"><span>👋</span><span><b>New here?</b> Tap <b>🎯 Focus</b> below to run a pass — the app guides you: quick read, slow scan, then work on whatever stands out.</span><button id="hintX" aria-label="Dismiss hint">✕</button></div>`;
+  }
   if(!n.tasks.length){
-    html += `<div class="center"><div style="font-size:44px">📓</div>
-      <h2>${esc(n.name)} is empty</h2>
-      <p class="muted">Write down everything you need to do.<br>New items always go at the end — no prioritizing.</p></div>`;
+    html += `<div class="center"><div style="font-size:46px">📓</div>
+      <h2 style="margin:10px 0 6px">${esc(n.name)} is empty</h2>
+      <p class="muted">Write down everything you need to do.<br>New items always go at the end — no prioritizing, no due dates.</p></div>`;
   }
-  pages.forEach(p => {
-    if(!p.tasks.length && !p.isLast) return;
-    const head = `<div class="pagehead"><h3>Page ${p.n+1}${p.isLast ? " · writing page" : ""}</h3>
-      <span class="badge${p.closed||p.dismissed?" closed":""}">${p.dismissed?"dismissed":p.closed?"closed":p.open+" open"}</span></div>`;
-    const rows = p.tasks.map(t => taskRow(n, t)).join("");
-    const add = p.isLast ? `<div class="addrow"><input id="addInput" placeholder="Add to the end of the list…" autocomplete="off">
-      <button class="btn" id="addBtn">Add</button></div><div id="addWarn"></div>` : "";
-    const inner = head + rows + add;
-    html += p.closed || p.dismissed
-      ? `<details class="closedpage"><summary>Page ${p.n+1} — ${p.dismissed?"dismissed":"closed"} (${p.tasks.length} items)</summary><div class="page">${inner}</div></details>`
-      : `<div class="page">${inner}</div>`;
+  allPages(n).forEach(p => {
+    if(!p.tasks.length && p.n !== wp) return;
+    const inner = pageCard(n, p, p.n === wp);
+    html += (p.closed || p.dismissed)
+      ? `<details class="closedpage"><summary>Page ${p.n + 1} — ${p.dismissed ? "dismissed" : "closed"} · ${p.tasks.length} items</summary>${inner}</details>`
+      : inner;
   });
+  if(wp > lastPage(n)) html += pageCard(n, pageInfo(n, wp), true);
   view.innerHTML = html;
-  view.querySelectorAll("[data-act]").forEach(b => b.onclick = e => { e.stopPropagation(); taskAct(b.dataset.act, b.dataset.id); });
-  const inp = document.getElementById("addInput");
-  if(inp){
-    const doAdd = () => {
-      const v = inp.value; if(!v.trim()) return;
-      const dup = dismissedMatch(n, v);
-      const w = document.getElementById("addWarn");
-      if(dup && !w.dataset.acked){
-        w.innerHTML = `<div class="warn">You dismissed “${esc(dup.text)}” on ${esc(dayLabel(dup.doneAt||dup.createdAt))}.
-          The system rejected it once — only re-enter after reflection.
-          <div class="btnrow"><button class="btn ghost" id="wAdd">Add it anyway</button></div></div>`;
-        w.dataset.acked = "1";
-        document.getElementById("wAdd").onclick = () => { addTask(n, v); renderList(); };
-        return;
-      }
-      addTask(n, v); renderList();
-    };
-    document.getElementById("addBtn").onclick = doAdd;
-    inp.onkeydown = e => { if(e.key === "Enter") doAdd(); };
-  }
+  const hx = document.getElementById("hintX");
+  if(hx) hx.onclick = () => { S.settings.seenHint = true; save(); document.getElementById("hint").remove(); };
+  bindTaskUI(n);
+  bindAddBox(n);
 }
-function taskAct(act, id){
+function bindTaskUI(n){
+  view.querySelectorAll("[data-act]").forEach(b => b.onclick = e => { e.stopPropagation(); taskAct(b.dataset.act, b.dataset.id); });
+  view.querySelectorAll("[data-expand]").forEach(el => el.onclick = () => {
+    const id = el.dataset.expand;
+    expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+    const scroll = window.scrollY;
+    renderList();
+    window.scrollTo(0, scroll);
+  });
+}
+function bindAddBox(n){
+  const inp = document.getElementById("addInput");
+  if(!inp) return;
+  const sug = document.getElementById("suggest"), w = document.getElementById("addWarn");
+  const renderSug = () => {
+    const items = historySuggestions(n, inp.value);
+    if(!items.length){ sug.style.display = "none"; return; }
+    sug.innerHTML = items.map(t =>
+      `<button data-sug="${t.id}"><span>${esc(t.text)}</span><span class="tag">${t.status === "dismissed" ? "dismissed" : "done before"}</span></button>`).join("");
+    sug.style.display = "block";
+    sug.querySelectorAll("[data-sug]").forEach(b => b.onclick = () => {
+      const f = findTask(b.dataset.sug); if(!f) return;
+      inp.value = f.t.text; sug.style.display = "none";
+      if(f.t.status === "dismissed") showDismissWarn(n, w, f.t, inp.value);
+      inp.focus();
+    });
+  };
+  inp.oninput = renderSug;
+  inp.onblur = () => setTimeout(() => sug.style.display = "none", 150);
+  const doAdd = () => {
+    const v = inp.value; if(!v.trim()) return;
+    if(addWithDismissCheck(n, v, w, () => { addTask(n, v); renderList(); })) renderList();
+  };
+  document.getElementById("addBtn").onclick = doAdd;
+  inp.onkeydown = e => { if(e.key === "Enter") doAdd(); };
+}
+/* Returns true if the add went through, false if it parked on the dismissal warning. */
+function addWithDismissCheck(n, v, w, onOk){
+  const dup = dismissedMatch(n, v);
+  if(dup && !w.dataset.acked){
+    showDismissWarn(n, w, dup, v);
+    w.dataset.acked = "1";
+    return false;
+  }
+  onOk(); return true;
+}
+function showDismissWarn(n, w, dup, v){
+  w.innerHTML = `<div class="warn">You dismissed “${esc(dup.text)}” on ${esc(dayLabel(dup.doneAt || dup.createdAt))}.
+    The system rejected it once — only re-enter after reflection.
+    <div class="btnrow"><button class="btn ghost" id="wAdd">Add it anyway</button>
+    <button class="btn ghost" id="wNo">Never mind</button></div></div>`;
+  document.getElementById("wAdd").onclick = () => { addTask(n, v); renderList(); };
+  document.getElementById("wNo").onclick = () => { w.innerHTML = ""; w.dataset.acked = ""; };
+}
+async function taskAct(act, id){
   const f = findTask(id); if(!f) return;
   const {n, t} = f;
-  if(act === "done"){ t.status = "done"; t.doneAt = Date.now(); }
-  else if(act === "dismiss"){ if(confirm("Dismiss this item?")){ t.status = "dismissed"; t.doneAt = Date.now(); } else return; }
-  else if(act === "del"){ if(confirm("Delete this item permanently?")) n.tasks = n.tasks.filter(x => x.id !== id); else return; }
+  if(act === "toggle"){
+    if(t.status === "open"){ t.status = "done"; t.doneAt = Date.now(); }
+    else if(t.status === "done"){ t.status = "open"; t.doneAt = null; }
+  }
+  else if(act === "dismiss"){
+    if(await uiConfirm("Dismiss this item?", `“${esc(t.text)}” will be highlighted and kept on the page, but treated as rejected.`, "Dismiss")){ t.status = "dismissed"; t.doneAt = Date.now(); }
+    else return;
+  }
+  else if(act === "del"){
+    if(await uiConfirm("Delete permanently?", `“${esc(t.text)}” will be removed for good. This can't be undone.`, "Delete")) n.tasks = n.tasks.filter(x => x.id !== id);
+    else return;
+  }
   else if(act === "edit"){
-    const v = prompt("Edit task:", t.text); if(v === null) return;
-    if(v.trim()) t.text = v.trim(); else return;
+    const v = await uiPrompt("Edit task", "", t.text, "Save");
+    if(v === null || !v.trim()) return;
+    t.text = v.trim();
   }
   else if(act === "reenter"){
-    const v = prompt("Re-enter at the end of the list (edit freely):", t.text); if(v === null) return;
-    if(v.trim()){ addTask(n, v.trim(), {reentryOf: t.id}); t.status = "done"; t.doneAt = Date.now(); }
-    else return;
+    const v = await uiPrompt("Re-enter at the end", "Edit freely — re-phrasing or breaking the task down is often best.", t.text, "Re-enter");
+    if(v === null || !v.trim()) return;
+    addTask(n, v.trim(), { reentryOf: t.id });
+    t.status = "done"; t.doneAt = Date.now();
+  }
+  else if(act === "readd"){
+    const inp = document.getElementById("addInput");
+    if(inp){ inp.value = t.text; inp.focus(); inp.scrollIntoView({block:"center", behavior:"smooth"}); }
+    const w = document.getElementById("addWarn");
+    if(w){ showDismissWarn(n, w, t, t.text); w.dataset.acked = "1"; }
+    return;
   }
   save(); renderList();
 }
-
-/* ============ focus pass ============ */
+/* ================= focus pass ================= */
 let F = null, timerInt = null;
 function stopTimer(){ if(timerInt){ clearInterval(timerInt); timerInt = null; } }
+function startFocusSession(n){
+  F = { nbId: n.id, page: firstActivePage(n), phase: "read", idx: 0, pass: 1,
+        order: [], worked: 0, workId: null, t0: 0 };
+}
 function renderFocus(){
   const n = nb();
-  if(!F || F.nbId !== n.id) F = { nbId: n.id, page: firstActivePage(n), phase: "read", idx: 0, pass: 1, order: [], worked: 0, t0: 0, elapsed: 0 };
-  if(F.page < 0){ view.innerHTML = `<div class="center"><div style="font-size:44px">🎉</div><h2>All clear</h2>
-    <p class="muted">Nothing outstanding. Add a task to start a new page.</p>
-    <button class="btn" onclick="go('list')">Add a task</button></div>`; return; }
-  const p = pageInfo(n, F.page);
+  if(!F || F.nbId !== n.id) startFocusSession(n);
+  if(F.page < 0){
+    view.innerHTML = `<div class="center"><div style="font-size:46px">🎉</div>
+      <h2 style="margin:10px 0 6px">All clear</h2>
+      <p class="muted">Nothing outstanding anywhere. Add a task to start a new page.</p>
+      <button class="btn" id="acAdd">Add a task</button></div>`;
+    document.getElementById("acAdd").onclick = () => go("list");
+    return;
+  }
+  const totalActive = allPages(n).filter(p => p.active).length;
   if(F.phase === "read"){
     const items = openTasks(n, F.page);
-    view.innerHTML = `<div class="focusbox"><div class="progress">Page ${F.page+1} · quick read — no acting yet</div>
-      ${items.map(t => `<div class="task"><span class="box" style="cursor:default"></span><span class="txt">${esc(t.text)}</span></div>`).join("") || '<p class="muted">No open items on this page.</p>'}
-      <button class="btn green block" id="readDone">I've read the page</button></div>`;
+    if(!items.length){ advancePage(); return; }
+    view.innerHTML = `<div class="focusbox">
+      <div class="progress">Page ${F.page + 1} of ${totalActive} active · quick read — just read, don't act yet</div>
+      ${items.map(t => `<div class="task"><span class="box" style="cursor:default;border:0;background:none;padding:0;width:22px"></span><span class="txt" style="cursor:default">${esc(t.text)}</span></div>`).join("")}
+      <button class="btn green block" id="readDone">I've read the page →</button></div>`;
     document.getElementById("readDone").onclick = () => {
-      F.order = openTasks(n, F.page).map(t => t.id); F.idx = 0; F.worked = 0; F.phase = "scan"; renderFocus();
+      F.order = openTasks(n, F.page).map(t => t.id);
+      F.idx = 0; F.worked = 0; F.phase = "scan"; renderFocus();
     };
   }
   else if(F.phase === "scan"){
     if(F.idx >= F.order.length){ endOfPass(); return; }
     const f = findTask(F.order[F.idx]);
     if(!f || f.t.status !== "open" || f.t.page !== F.page){ F.idx++; renderFocus(); return; }
-    view.innerHTML = `<div class="focusbox"><div class="progress">Page ${F.page+1} · item ${F.idx+1} of ${F.order.length} · pass ${F.pass}</div>
+    view.innerHTML = `<div class="focusbox">
+      <div class="progress">Page ${F.page + 1} · item ${F.idx + 1} of ${F.order.length} · pass ${F.pass}</div>
       <div class="big-task">${esc(f.t.text)}</div>
       ${f.t.note ? `<p class="muted">${esc(f.t.note)}</p>` : ""}
-      <div class="btnrow"><button class="btn green" id="sOut">Stands out — work on this</button>
+      <p class="muted" style="margin-top:0">Does it stand out? Don't think — notice.</p>
+      <div class="btnrow"><button class="btn green" id="sOut">Stands out</button>
       <button class="btn ghost" id="sNo">Not this one</button></div></div>`;
     document.getElementById("sOut").onclick = () => startWork(f.t.id);
     document.getElementById("sNo").onclick = () => { F.idx++; renderFocus(); };
   }
   else if(F.phase === "work"){
-    const f = findTask(F.workId); if(!f){ F.phase = "scan"; F.idx++; renderFocus(); return; }
-    view.innerHTML = `<div class="focusbox"><div class="progress">Working · Page ${F.page+1}</div>
+    const f = findTask(F.workId);
+    if(!f){ F.phase = "scan"; F.idx++; renderFocus(); return; }
+    view.innerHTML = `<div class="focusbox">
+      <div class="progress">Working · page ${F.page + 1}</div>
       <div class="big-task">${esc(f.t.text)}</div>
       <div class="timer" id="timer">0:00 elapsed — no limit, stop when it feels right</div>
-      <label class="f">Note (optional)</label><textarea class="note" id="wNote" placeholder="…">${esc(f.t.note)}</textarea>
-      <label class="f">Re-enter text (used only if “Done for now”)</label>
-      <input class="text" id="wReentry" value="${esc(f.t.text)}">
-      <div class="checkline"><input type="checkbox" id="wRecur"><label for="wRecur">Recurring — re-enter at the end when finished</label></div>
-      <div class="btnrow"><button class="btn green" id="wDone">Finished</button></div>
-      <div class="btnrow"><button class="btn" id="wPause">Done for now</button>
+      <label class="f" for="wNote">Note (optional)</label>
+      <textarea class="note" id="wNote" placeholder="…">${esc(f.t.note)}</textarea>
+      <details class="rentry"><summary>Re-enter text (used only if “Done for now”)</summary>
+        <input class="text" id="wReentry" value="${esc(f.t.text)}" aria-label="Re-entry text"></details>
+      <div class="checkline"><input type="checkbox" id="wRecur">
+        <label for="wRecur">Recurring — re-enter at the end when finished</label></div>
+      <div class="btnrow"><button class="btn green" id="wDone">Finished ✓</button></div>
+      <div class="btnrow"><button class="btn" id="wPause">Done for now ↩</button>
       <button class="btn ghost" id="wBack">Put back</button></div></div>`;
-    F.t0 = Date.now() - F.elapsed;
+    F.t0 = Date.now();
     const tel = document.getElementById("timer");
-    timerInt = setInterval(() => { tel.textContent = fmtDur(Date.now() - F.t0) + " elapsed — no limit, stop when it feels right"; }, 1000);
-    const finishCommon = () => {
+    timerInt = setInterval(() => {
+      tel.textContent = fmtDur(Date.now() - F.t0) + " elapsed — no limit, stop when it feels right";
+    }, 1000);
+    const collect = () => {
       stopTimer();
       f.t.note = document.getElementById("wNote").value;
-      f.t.sessions++; f.t.workMs += Date.now() - F.t0; F.elapsed = 0;
+      f.t.sessions++; f.t.workMs += Date.now() - F.t0;
     };
     document.getElementById("wDone").onclick = () => {
       const recur = document.getElementById("wRecur").checked;
-      finishCommon();
+      collect();
       f.t.status = "done"; f.t.doneAt = Date.now(); F.worked++;
-      if(recur) addTask(nb(), f.t.text, {reentryOf: f.t.id});
+      if(recur) addTask(nb(), f.t.text, { reentryOf: f.t.id });
       save(); F.phase = "scan"; F.idx++; renderFocus();
     };
     document.getElementById("wPause").onclick = () => {
       const txt = document.getElementById("wReentry").value.trim() || f.t.text;
-      finishCommon();
-      addTask(nb(), txt, {reentryOf: f.t.id});
+      collect();
+      /* Re-enter FIRST, then cross off — the place is never lost. */
+      addTask(nb(), txt, { reentryOf: f.t.id });
       f.t.status = "done"; f.t.doneAt = Date.now(); F.worked++;
       save(); F.phase = "scan"; F.idx++; renderFocus();
     };
     document.getElementById("wBack").onclick = () => {
-      stopTimer(); f.t.note = document.getElementById("wNote").value;
-      f.t.sessions++; f.t.workMs += Date.now() - F.t0; F.elapsed = 0;
-      save(); F.phase = "scan"; F.idx++; renderFocus();
+      collect(); save(); F.phase = "scan"; F.idx++; renderFocus();
     };
   }
   else if(F.phase === "dismissed"){
-    view.innerHTML = `<div class="focusbox"><div class="progress">Page ${F.page+1} · dismissed</div>
-      <h2 style="margin-top:0">Nothing stood out — page dismissed</h2>
-      <p class="muted">First pass, nothing called to you. The system treats these as rejected for now. They stay visible, highlighted, on the page.</p>
-      ${F.dismissedList.map(t => `<div class="task dismissed"><span class="txt">${esc(t)}</span></div>`).join("")}
-      <button class="btn block" id="dNext">Continue to next page</button></div>`;
+    view.innerHTML = `<div class="focusbox">
+      <div class="progress">Page ${F.page + 1} · dismissed</div>
+      <h2 style="margin:0 0 8px">Nothing stood out</h2>
+      <p class="muted">First pass, nothing called to you — so the system sets this page aside.
+      The items stay visible, highlighted. They were rejected, not forgotten.</p>
+      ${F.dismissedList.map(t => `<div class="task dismissed"><span class="txt" style="cursor:default">${esc(t)}</span></div>`).join("")}
+      <button class="btn block" id="dNext">Continue →</button></div>`;
     document.getElementById("dNext").onclick = advancePage;
   }
 }
-function startWork(id){ F.workId = id; F.elapsed = 0; F.phase = "work"; renderFocus(); }
+function startWork(id){ F.workId = id; F.phase = "work"; renderFocus(); }
 function endOfPass(){
   const n = nb();
-  if(F.worked === 0 && F.pass === 1 && F.page !== lastPage(n)){
+  if(F.worked === 0 && F.pass === 1 && F.page !== writingPage(n)){
     const items = openTasks(n, F.page);
     items.forEach(t => { t.status = "dismissed"; t.doneAt = Date.now(); });
     n.dismissedPages = n.dismissedPages || [];
     if(!n.dismissedPages.includes(F.page)) n.dismissedPages.push(F.page);
     save();
-    F.dismissedList = items.map(t => t.text); F.phase = "dismissed"; renderFocus();
+    F.dismissedList = items.map(t => t.text);
+    F.phase = "dismissed"; renderFocus();
   } else {
-    advancePage(true);
+    advancePage();
   }
 }
-function advancePage(light){
+function advancePage(){
   const n = nb();
-  const act = allPages(n).filter(p => p.active).map(p => p.n).sort((a,b) => a-b);
+  const act = allPages(n).filter(p => p.active).map(p => p.n).sort((a, b) => a - b);
   if(!act.length){ F.page = -1; F.phase = "read"; renderFocus(); return; }
   const next = act.find(p => p > F.page);
   F.page = (next === undefined) ? act[0] : next;
   F.pass = 1; F.phase = "read"; renderFocus();
 }
-
-/* ============ log view ============ */
+/* ================= log view ================= */
 function renderLog(){
   const n = nb();
-  const done = n.tasks.filter(t => t.status === "done").sort((a,b) => b.doneAt - a.doneAt);
+  const done = n.tasks.filter(t => t.status === "done").sort((a, b) => b.doneAt - a.doneAt);
   let html = `<div class="card"><h2>Completion log</h2>`;
-  if(!done.length) html += `<p class="muted">Nothing finished yet. The log is a quiet record of what you get done.</p>`;
+  if(!done.length){
+    html += `<p class="muted">Nothing finished yet. This is a quiet record of what gets done — no streaks, no scores.</p>`;
+  }
   let lastDay = "";
   done.forEach(t => {
     const d = weekdayLabel(t.doneAt);
     if(d !== lastDay){ html += `<div class="logday">${esc(d)}</div>`; lastDay = d; }
-    const sess = t.sessions ? ` <span class="muted">· ${t.sessions} session${t.sessions>1?"s":""}${t.workMs? ", "+fmtDur(t.workMs):""}</span>` : "";
-    html += `<div class="logitem">${esc(t.text)}${sess}</div>`;
+    const sess = t.sessions ? ` <span class="t">· ${t.sessions} session${t.sessions > 1 ? "s" : ""}${t.workMs ? ", " + fmtDur(t.workMs) : ""}</span>` : "";
+    html += `<div class="logitem">${esc(t.text)} <span class="t">· ${esc(timeLabel(t.doneAt))}</span>${sess}</div>`;
   });
   view.innerHTML = html + `</div>`;
 }
 
-/* ============ more view ============ */
+/* ================= more view ================= */
 function renderMore(){
+  const total = nb().tasks.length;
   view.innerHTML = `<div class="card"><h2>More</h2>
-    <div class="btnrow" style="flex-direction:column">
-      <button class="btn ghost block" id="mBacklog">📥 Dump backlog</button>
-      <button class="btn ghost block" id="mSettings">⚙ Settings</button>
-      <button class="btn ghost block" id="mAbout">📖 About Autofocus</button>
+    <div class="btnrow" style="flex-direction:column;gap:10px">
+      <button class="btn ghost block" id="mBacklog" style="margin-top:0">📥&nbsp; Dump backlog</button>
+      <button class="btn ghost block" id="mSettings" style="margin-top:0">⚙&nbsp; Settings</button>
+      <button class="btn ghost block" id="mAbout" style="margin-top:0">📖&nbsp; About Autofocus</button>
     </div>
-    <p class="muted" style="margin-top:14px">Your data lives in this browser (localStorage) on this device.
-    Use Export in Settings to move it elsewhere.</p></div>`;
+    <p class="muted" style="margin-top:16px">${total} item${total === 1 ? "" : "s"} in ${esc(nb().name)}.
+    Your data lives in this browser on this device — nothing is sent anywhere.
+    Use Export in Settings to move it.</p>
+    <div class="ver">Autofocus v2 · faithful to markforster.squarespace.com/autofocus-system</div></div>`;
   document.getElementById("mBacklog").onclick = renderBacklog;
   document.getElementById("mSettings").onclick = renderSettings;
   document.getElementById("mAbout").onclick = renderAbout;
 }
 function renderBacklog(){
   view.innerHTML = `<div class="card"><h2>Dump backlog</h2>
-    <p class="muted">Paste or type everything on your mind — one item per line. The system will sift it.
-    For a big pile like email, the page suggests one task: “Email Backlog”, worked little and often.</p>
-    <textarea class="note" id="blText" style="min-height:160px" placeholder="One item per line…"></textarea>
+    <p class="muted">Get everything out of your head — one item per line. The system will sift it.
+    For a big pile like email, the page suggests a single task (“Email Backlog”), worked little and often.</p>
+    <textarea class="note" id="blText" style="min-height:170px" placeholder="One item per line…" aria-label="Backlog items"></textarea>
     <div class="btnrow"><button class="btn green" id="blAdd">Add all to the end</button>
-    <button class="btn ghost" onclick="go('more')">Cancel</button></div></div>`;
+    <button class="btn ghost" id="blBack">Cancel</button></div></div>`;
+  document.getElementById("blBack").onclick = () => go("more");
   document.getElementById("blAdd").onclick = () => {
     const lines = document.getElementById("blText").value.split("\n").map(s => s.trim()).filter(Boolean);
-    const n = nb(); lines.forEach(l => addTask(n, l));
+    if(!lines.length) return;
+    const n = nb();
+    lines.forEach(l => addTask(n, l));
     save(); go("list");
   };
 }
 function renderSettings(){
-  const n = nb();
+  const n = nb(), fs = Math.round((S.settings.fontScale || 1) * 100);
   view.innerHTML = `<div class="card"><h2>Settings</h2>
-    <label class="f">Items per page (10–40, the page suggests 25–35)</label>
-    <input class="text" id="setPp" type="number" min="10" max="40" value="${pageSize()}">
+    <label class="f">Text size</label>
+    <div class="stepper"><button id="fsDown" aria-label="Smaller text">−</button>
+      <span class="val" id="fsVal">${fs}%</span><button id="fsUp" aria-label="Larger text">+</button></div>
+    <label class="f">Items per page (10–40 · the page suggests 25–35)</label>
+    <div class="stepper"><button id="ppDown" aria-label="Fewer items per page">−</button>
+      <span class="val" id="ppVal">${pageSize()}</span><button id="ppUp" aria-label="More items per page">+</button></div>
+    <p class="muted">Applies to new pages; existing pages keep their layout.</p>
     <h3>Notebooks</h3>
-    ${S.notebooks.map(x => `<div class="kv"><span>${esc(x.name)}${x.id===S.activeNbId?" · current":""}</span>
-      <span><button class="btn ghost" style="padding:6px 10px;font-size:14px" data-rn="${x.id}">Rename</button>
-      ${S.notebooks.length>1?`<button class="btn ghost" style="padding:6px 10px;font-size:14px" data-del="${x.id}">Delete</button>`:""}</span></div>`).join("")}
+    ${S.notebooks.map(x => `<div class="kv"><span>${esc(x.name)}${x.id === S.activeNbId ? ' <span class="muted">· current</span>' : ""}</span>
+      <span><button class="chipbtn" data-rn="${x.id}">Rename</button>
+      ${S.notebooks.length > 1 ? `<button class="chipbtn danger" data-del="${x.id}">Delete</button>` : ""}</span></div>`).join("")}
     <h3>Backup</h3>
     <div class="btnrow"><button class="btn ghost" id="expBtn">Export JSON</button>
     <button class="btn ghost" id="impBtn">Import JSON</button></div>
-    <input type="file" id="impFile" accept=".json" style="display:none">
+    <input type="file" id="impFile" accept=".json,application/json" style="display:none" aria-label="Import backup file">
     <h3>Danger zone</h3>
     <button class="btn danger" id="resetBtn">Reset everything</button>
-    <div class="btnrow"><button class="btn ghost" onclick="go('more')">Back</button></div></div>`;
-  document.getElementById("setPp").onchange = e => {
-    S.settings.pageSize = Math.min(40, Math.max(10, parseInt(e.target.value) || 25)); save();
+    <div class="btnrow"><button class="btn ghost" id="setBack">Back</button></div></div>`;
+  const setFs = d => {
+    S.settings.fontScale = Math.min(1.25, Math.max(.9, Math.round(((S.settings.fontScale || 1) + d) * 100) / 100));
+    save(); applyFontScale();
+    document.getElementById("fsVal").textContent = Math.round(S.settings.fontScale * 100) + "%";
   };
-  view.querySelectorAll("[data-rn]").forEach(b => b.onclick = () => {
+  document.getElementById("fsDown").onclick = () => setFs(-.05);
+  document.getElementById("fsUp").onclick = () => setFs(.05);
+  const setPp = d => {
+    S.settings.pageSize = Math.min(40, Math.max(10, pageSize() + d));
+    save(); document.getElementById("ppVal").textContent = pageSize();
+  };
+  document.getElementById("ppDown").onclick = () => setPp(-5);
+  document.getElementById("ppUp").onclick = () => setPp(5);
+  document.getElementById("setBack").onclick = () => go("more");
+  view.querySelectorAll("[data-rn]").forEach(b => b.onclick = async () => {
     const x = S.notebooks.find(x => x.id === b.dataset.rn);
-    const v = prompt("Rename notebook:", x.name); if(v && v.trim()){ x.name = v.trim(); save(); renderTabs(); renderSettings(); }
+    const v = await uiPrompt("Rename notebook", "", x.name, "Rename");
+    if(v && v.trim()){ x.name = v.trim(); save(); renderTabs(); renderSettings(); }
   });
-  view.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+  view.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
     const x = S.notebooks.find(x => x.id === b.dataset.del);
-    if(confirm(`Delete notebook “${x.name}” and all its tasks?`)){
+    if(await uiConfirm("Delete notebook?", `“${esc(x.name)}” and all ${x.tasks.length} of its items will be gone for good.`, "Delete")){
       S.notebooks = S.notebooks.filter(y => y.id !== x.id);
       if(S.activeNbId === x.id) S.activeNbId = S.notebooks[0].id;
-      F = null; save(); renderTabs(); renderSettings();
+      F = null; expanded.clear(); save(); renderTabs(); renderSettings();
     }
   });
   document.getElementById("expBtn").onclick = () => {
-    const blob = new Blob([JSON.stringify(S, null, 2)], {type:"application/json"});
+    const blob = new Blob([JSON.stringify(S, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = "autofocus-backup.json"; a.click();
+    a.href = URL.createObjectURL(blob);
+    a.download = "autofocus-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   };
   document.getElementById("impBtn").onclick = () => document.getElementById("impFile").click();
   document.getElementById("impFile").onchange = e => {
     const f = e.target.files[0]; if(!f) return;
     const r = new FileReader();
-    r.onload = () => { try{
+    r.onload = async () => {
+      try{
         const d = JSON.parse(r.result);
-        if(!d.notebooks) throw 0;
-        if(confirm("Replace all current data with this backup?")){ S = d; save(); renderTabs(); go("list"); }
-      }catch(err){ alert("That file doesn't look like an Autofocus backup."); } };
-    r.readAsText(f);
+        if(!d.notebooks || !Array.isArray(d.notebooks)) throw 0;
+        if(await uiConfirm("Replace all data?", "Everything currently in the app will be replaced by this backup.", "Replace")){
+          S = d;
+          S.settings = Object.assign({ pageSize: 25, fontScale: 1, seenHint: true }, S.settings || {});
+          F = null; expanded.clear(); save(); applyFontScale(); renderTabs(); go("list");
+        }
+      }catch(err){ uiAlert("Import failed", "That file doesn't look like an Autofocus backup."); }
+    };
+    r.readAsText(f); e.target.value = "";
   };
-  document.getElementById("resetBtn").onclick = () => {
-    if(confirm("Delete ALL notebooks, tasks, and history?") && confirm("Really — everything goes.")){
-      S = seedState(); F = null; save(); renderTabs(); go("list");
+  document.getElementById("resetBtn").onclick = async () => {
+    if(await uiConfirm("Reset everything?", "All notebooks, tasks, and history will be deleted.", "Reset")
+      && await uiConfirm("Are you really sure?", "This is the last checkpoint. Everything goes.", "Delete everything")){
+      S = seedState(); S.settings.seenHint = true; F = null; expanded.clear();
+      save(); applyFontScale(); renderTabs(); go("list");
     }
   };
 }
 function renderAbout(){
   view.innerHTML = `<div class="card"><h2>About Autofocus</h2>
-    <p class="muted">Mark Forster's “psychological” time management system — doing what it says, not what a priority matrix says.
-    Full credit: <a href="http://markforster.squarespace.com/autofocus-system/" target="_blank" rel="noopener">markforster.squarespace.com/autofocus-system</a></p>
-    <h3>Quick start — the 8 steps</h3>
+    <p class="muted">Mark Forster's “psychological” time management system — doing what stands out,
+    not what a priority matrix says. Full credit and the original text:
+    <a href="http://markforster.squarespace.com/autofocus-system/" target="_blank" rel="noopener">markforster.squarespace.com/autofocus-system</a></p>
+    <h3>The method, in 8 steps</h3>
     <ol class="steps">
       <li>Write down everything you need to do, one line each, in a ruled notebook. New items always go at the end.</li>
       <li>Read through the current page quickly, without taking action.</li>
       <li>Go through the page slowly, in order, until one item stands out.</li>
-      <li>Work on it as long as you feel like. If unfinished, re-enter it at the end of the list, then cross it off here.</li>
-      <li>Continue through the page the same way until you complete a pass with nothing standing out.</li>
+      <li>Work on it as long as you feel like. If unfinished, re-enter it at the end of the list first, then cross it off here.</li>
+      <li>Keep going until a full pass finds nothing standing out.</li>
       <li>Move to the next page and repeat.</li>
-      <li>After the final page, go back to the first live page.</li>
-      <li>If you finish a first pass on a page with nothing standing out, dismiss the whole page (highlight, don't delete) — except the final page you're still writing on.</li>
+      <li>After the final page, loop back to the first live page.</li>
+      <li>If a first pass on a page finds nothing standing out, dismiss the whole page — except the final page you're still writing on.</li>
     </ol>
-    <h3>Dos and don'ts (from the page)</h3>
+    <h3>Rules from the page</h3>
     <ul class="donts">
-      <li>Do date the first item you add each day.</li>
-      <li>Do re-enter recurring items when finished.</li>
-      <li>Do take dismissal seriously — think hard before re-entering a dismissed item.</li>
-      <li>Don't prioritize, pre-edit, or sort. Don't add due dates or reminders.</li>
-      <li>Don't put time-specific commitments here — those belong on a calendar.</li>
-      <li>Don't use it in meetings or for other people's actions.</li>
+      <li>Date the first item you add each day.</li>
+      <li>Re-enter recurring items when you finish them.</li>
+      <li>Take dismissal seriously — reflect before re-adding a dismissed item.</li>
+      <li>Never prioritize, pre-edit, or sort. No due dates, no reminders.</li>
+      <li>Time-specific commitments belong on a calendar, not here.</li>
+      <li>Don't run it in meetings or track other people's actions with it.</li>
     </ul>
     <h3>Why it works</h3>
-    <p class="muted" style="font-size:15px">Rational prioritizing is slow and usually wrong about what you'll actually do.
-    Autofocus outsources the choice to fast pattern-matching: your brain already knows what's ripe. Working in short bursts on what stands out,
-    and letting stale pages dismiss themselves, keeps the list honest without willpower.</p>
-    <div class="btnrow"><button class="btn ghost" onclick="go('more')">Back</button></div></div>`;
+    <p class="muted" style="font-size:calc(15px * var(--fs))">Rational prioritizing is slow and usually wrong about what you'll actually do.
+    Autofocus hands the choice to fast pattern-matching: your brain already knows what's ripe. Short bursts on what
+    stands out, and stale pages dismissing themselves, keep the list honest without willpower.</p>
+    <div class="btnrow"><button class="btn ghost" id="abBack">Back</button></div></div>`;
+  document.getElementById("abBack").onclick = () => go("more");
 }
 
-/* ============ catch-up & init ============ */
+/* ================= catch-up & init ================= */
 function maybeCatchUp(){
   const n = nb();
   const gap = Date.now() - (S.lastVisit || Date.now());
   S.lastVisit = Date.now(); save();
-  if(gap < 8*3600*1000) return;
+  if(gap < 8 * 3600 * 1000) return;
   const open = [];
-  allPages(n).filter(p => p.active).forEach(p => openTasks(n, p.n).forEach(t => open.push({p:p.n, t})));
+  allPages(n).filter(p => p.active).forEach(p =>
+    openTasks(n, p.n).forEach(t => open.push({ p: p.n, t })));
   if(!open.length) return;
-  modal(`<h2>Welcome back</h2><p class="muted">It's been a while — here's everything outstanding, read-only.
-    (The page suggests reading through all open items after an extended break.)</p>
+  sheetResolve = null;
+  openSheet(`<h2>Welcome back</h2>
+    <p class="muted" style="font-size:calc(15px * var(--fs))">It's been a while — here's everything outstanding, read-only.
+    The page suggests reading through all open items after an extended break.</p>
     ${open.map(o => `<div class="task"><span class="box" style="cursor:default"></span>
-      <span class="txt"><span class="meta">p${o.p+1} · </span>${esc(o.t.text)}</span></div>`).join("")}`);
+      <span class="txt" style="cursor:default"><span class="meta">p${o.p + 1} · </span>${esc(o.t.text)}</span></div>`).join("")}
+    <button class="btn block" id="cuOk">Start</button>`);
+  // non-resolving sheet: just closes
+  const btn = document.getElementById("cuOk");
+  const prevResolve = sheetResolve;
+  btn.onclick = () => { sheetResolve = prevResolve; closeSheet(true); };
+  modalEl.onclick = e => { if(e.target === modalEl){ sheetResolve = prevResolve; closeSheet(true); } };
 }
 window.go = go;
 renderTabs();
 go("list");
 maybeCatchUp();
+if("serviceWorker" in navigator && location.protocol.indexOf("http") === 0){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
 </script>
 </body>
 </html>
